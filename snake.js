@@ -1,3 +1,5 @@
+//you win the game by oroborsing yourself by wrapping around the screen making a straight line?
+//next add start screen and "full screen" transition
 var blockSize = 25;
 var rows = 20;
 var cols = 20;
@@ -10,7 +12,6 @@ var snakeY = blockSize * 5;
 var velocityX = 0;
 var velocityY = 0;
 
-// Queue to store the last two directions
 var directionQueue = [];
 
 var snakeBody = [];
@@ -20,38 +21,90 @@ var foodY;
 
 var gameOver = false;
 
+var grass1 = new Image();
+var grass2 = new Image();
+var grass3 = new Image();
+
 window.onload = function () {
-  board = document.getElementById("board");
-  board.height = rows * blockSize;
-  board.width = cols * blockSize;
-  context = board.getContext("2d");
+  grass1.src = "images/grass1.png";
+  grass2.src = "images/grass2.png";
+  grass3.src = "images/grass3.png";
 
-  placeFood();
-  document.addEventListener("keyup", changeDirection);
+  grass3.onload = function () {
+    // Main game board
+    board = document.getElementById("board");
+    board.height = rows * blockSize;
+    board.width = cols * blockSize;
+    context = board.getContext("2d");
 
-  setInterval(update, 50);
+    // Background board
+    backgroundBoard = document.getElementById("background-board");
+    backgroundBoard.height = rows * blockSize;
+    backgroundBoard.width = cols * blockSize;
+    backgroundContext = backgroundBoard.getContext("2d");
+
+    drawBackground();
+
+    placeFood();
+    document.addEventListener("keyup", changeDirection);
+
+    setInterval(update, 50);
+  };
 };
+
+function drawBackground() {
+  //generating random tile map
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      var randomNum = Math.floor(Math.random() * 10) + 1;
+
+      if (randomNum >= 1 && randomNum <= 4) {
+        backgroundContext.drawImage(
+          grass1,
+          x * blockSize,
+          y * blockSize,
+          blockSize,
+          blockSize
+        );
+      } else if (randomNum >= 5 && randomNum <= 8) {
+        backgroundContext.drawImage(
+          grass2,
+          x * blockSize,
+          y * blockSize,
+          blockSize,
+          blockSize
+        );
+      } else {
+        backgroundContext.drawImage(
+          grass3,
+          x * blockSize,
+          y * blockSize,
+          blockSize,
+          blockSize
+        );
+      }
+    }
+  }
+}
 
 function update() {
   if (gameOver) {
     return;
   }
 
-  // Check if the snake is aligned with the grid
+  context.clearRect(0, 0, board.width, board.height);
+
+  context.fillStyle = "red";
+  context.fillRect(foodX, foodY, blockSize, blockSize);
+
+  // Direction changing logic
   if (snakeX % blockSize === 0 && snakeY % blockSize === 0) {
-    // Apply the first direction in the queue, if there is one
     if (directionQueue.length > 0) {
-      var newDirection = directionQueue.shift(); // Get the oldest direction (second latest)
+      var newDirection = directionQueue.shift();
       velocityX = newDirection[0];
       velocityY = newDirection[1];
     }
   }
-
-  context.fillStyle = "black";
-  context.fillRect(0, 0, board.width, board.height);
-
-  context.fillStyle = "red";
-  context.fillRect(foodX, foodY, blockSize, blockSize);
 
   if (snakeX == foodX && snakeY == foodY) {
     snakeBody.push([foodX, foodY]);
@@ -74,14 +127,17 @@ function update() {
     context.fillRect(snakeBody[i][0], snakeBody[i][1], blockSize, blockSize);
   }
 
-  if (
-    snakeX < 0 ||
-    snakeX >= cols * blockSize ||
-    snakeY < 0 ||
-    snakeY >= rows * blockSize
-  ) {
-    gameOver = true;
-    alert("Game Over");
+  // Wrapping logic
+  if (snakeX < 0) {
+    snakeX = cols * blockSize - blockSize; // wrap to the right side
+  } else if (snakeX >= cols * blockSize) {
+    snakeX = 0; // wrap to the left side
+  }
+
+  if (snakeY < 0) {
+    snakeY = rows * blockSize - blockSize; // wrap to the bottom
+  } else if (snakeY >= rows * blockSize) {
+    snakeY = 0; // wrap to the top
   }
 
   for (let i = 0; i < snakeBody.length; i++) {
@@ -93,7 +149,6 @@ function update() {
 }
 
 function changeDirection(e) {
-  // Determine the new direction based on the key pressed
   let newDirectionX = 0;
   let newDirectionY = 0;
 
@@ -110,16 +165,14 @@ function changeDirection(e) {
     newDirectionX = 1;
     newDirectionY = 0;
   } else {
-    return; // Invalid direction or reversing direction
+    return;
   }
 
-  // Add the new direction to the queue
   if (directionQueue.length < 2) {
     directionQueue.push([newDirectionX, newDirectionY]);
   } else {
-    // If there are already 2 directions, remove the oldest one and add the new one
-    directionQueue.shift(); // Remove the second latest one
-    directionQueue.push([newDirectionX, newDirectionY]); // Add the latest one
+    directionQueue.shift();
+    directionQueue.push([newDirectionX, newDirectionY]);
   }
 }
 

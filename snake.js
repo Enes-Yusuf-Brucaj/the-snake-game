@@ -1,8 +1,8 @@
 //you win the game by oroborsing yourself by wrapping around the screen making a straight line?
-//next add start screen and "full screen" transition
-var blockSize = 25;
-var rows = 20;
-var cols = 20;
+//next add start screen and "full screen" transition also make apples not be able to spawn where snake is
+var blockSize = 64;
+var rows;
+var cols;
 var board;
 var context;
 
@@ -24,33 +24,49 @@ var gameOver = false;
 var grass1 = new Image();
 var grass2 = new Image();
 var grass3 = new Image();
+var imagesLoaded = 0;
 
 window.onload = function () {
   grass1.src = "images/grass1.png";
   grass2.src = "images/grass2.png";
   grass3.src = "images/grass3.png";
 
-  grass3.onload = function () {
-    // Main game board
-    board = document.getElementById("board");
-    board.height = rows * blockSize;
-    board.width = cols * blockSize;
-    context = board.getContext("2d");
-
-    // Background board
-    backgroundBoard = document.getElementById("background-board");
-    backgroundBoard.height = rows * blockSize;
-    backgroundBoard.width = cols * blockSize;
-    backgroundContext = backgroundBoard.getContext("2d");
-
-    drawBackground();
-
-    placeFood();
-    document.addEventListener("keyup", changeDirection);
-
-    setInterval(update, 50);
-  };
+  function imageLoaded() {
+    imagesLoaded++;
+    if (imagesLoaded === 3) {
+      startGame();
+    }
+  }
+  grass1.onload = imageLoaded;
+  grass2.onload = imageLoaded;
+  grass3.onload = imageLoaded;
 };
+
+function startGame() {
+  rows = Math.floor(window.innerHeight / blockSize);
+  cols = Math.floor(window.innerWidth / blockSize);
+  // Main game board
+  board = document.getElementById("board");
+  board.height = rows * blockSize;
+  board.width = cols * blockSize;
+  context = board.getContext("2d");
+
+  // Background board
+  backgroundBoard = document.getElementById("background-board");
+  backgroundBoard.height = rows * blockSize;
+  backgroundBoard.width = cols * blockSize;
+  backgroundContext = backgroundBoard.getContext("2d");
+
+  context.imageSmoothingEnabled = false;
+  backgroundContext.imageSmoothingEnabled = false;
+
+  drawBackground();
+
+  placeFood();
+  document.addEventListener("keyup", changeDirection);
+
+  setInterval(update, 50);
+}
 
 function drawBackground() {
   //generating random tile map
@@ -152,19 +168,35 @@ function changeDirection(e) {
   let newDirectionX = 0;
   let newDirectionY = 0;
 
-  if (e.code == "ArrowUp" && velocityY != 1) {
+  if (e.code == "ArrowUp") {
     newDirectionX = 0;
     newDirectionY = -1;
-  } else if (e.code == "ArrowDown" && velocityY != -1) {
+  } else if (e.code == "ArrowDown") {
     newDirectionX = 0;
     newDirectionY = 1;
-  } else if (e.code == "ArrowLeft" && velocityX != 1) {
+  } else if (e.code == "ArrowLeft") {
     newDirectionX = -1;
     newDirectionY = 0;
-  } else if (e.code == "ArrowRight" && velocityX != -1) {
+  } else if (e.code == "ArrowRight") {
     newDirectionX = 1;
     newDirectionY = 0;
   } else {
+    return;
+  }
+
+  let currentDirectionX = velocityX;
+  let currentDirectionY = velocityY;
+
+  if (directionQueue.length > 0) {
+    const lastDirection = directionQueue[directionQueue.length - 1];
+    currentDirectionX = lastDirection[0];
+    currentDirectionY = lastDirection[1];
+  }
+
+  if (
+    newDirectionX === -currentDirectionX &&
+    newDirectionY === -currentDirectionY
+  ) {
     return;
   }
 

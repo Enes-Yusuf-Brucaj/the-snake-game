@@ -26,7 +26,13 @@ var grass2 = new Image();
 var grass3 = new Image();
 var imagesLoaded = 0;
 
+var startScreen = document.getElementById("start-screen");
+var header = document.getElementById("header");
+var startButton = document.getElementById("start-button");
+
 window.onload = function () {
+  console.log(startButton);
+
   grass1.src = "images/grass1.png";
   grass2.src = "images/grass2.png";
   grass3.src = "images/grass3.png";
@@ -34,7 +40,7 @@ window.onload = function () {
   function imageLoaded() {
     imagesLoaded++;
     if (imagesLoaded === 3) {
-      startGame();
+      setGameDimensions();
     }
   }
   grass1.onload = imageLoaded;
@@ -42,30 +48,25 @@ window.onload = function () {
   grass3.onload = imageLoaded;
 };
 
-function startGame() {
+function setGameDimensions() {
   rows = Math.floor(window.innerHeight / blockSize);
   cols = Math.floor(window.innerWidth / blockSize);
-  // Main game board
+
   board = document.getElementById("board");
+  backgroundBoard = document.getElementById("background-board");
+
   board.height = rows * blockSize;
   board.width = cols * blockSize;
-  context = board.getContext("2d");
-
-  // Background board
-  backgroundBoard = document.getElementById("background-board");
   backgroundBoard.height = rows * blockSize;
   backgroundBoard.width = cols * blockSize;
+
+  context = board.getContext("2d");
   backgroundContext = backgroundBoard.getContext("2d");
 
   context.imageSmoothingEnabled = false;
   backgroundContext.imageSmoothingEnabled = false;
 
   drawBackground();
-
-  placeFood();
-  document.addEventListener("keyup", changeDirection);
-
-  setInterval(update, 50);
 }
 
 function drawBackground() {
@@ -103,6 +104,24 @@ function drawBackground() {
   }
 }
 
+startButton.addEventListener("click", function () {
+  header.style.transform = "translateY(-100px)";
+  startButton.remove();
+
+  setTimeout(function () {
+    startScreen.style.display = "none";
+    startGame();
+  }, 1000);
+});
+
+function startGame() {
+  console.log("hi");
+  placeFood();
+  document.addEventListener("keyup", changeDirection);
+
+  setInterval(update, 100);
+}
+
 function update() {
   if (gameOver) {
     return;
@@ -135,8 +154,8 @@ function update() {
   }
 
   context.fillStyle = "lime";
-  snakeX += (velocityX * blockSize) / 2;
-  snakeY += (velocityY * blockSize) / 2;
+  snakeX += velocityX * blockSize;
+  snakeY += velocityY * blockSize;
   context.fillRect(snakeX, snakeY, blockSize, blockSize);
 
   for (let i = 0; i < snakeBody.length; i++) {

@@ -1,5 +1,3 @@
-//you win the game by oroborsing yourself by wrapping around the screen making a straight line?
-//next add start screen and "full screen" transition also make apples not be able to spawn where snake is
 var blockSize = 64;
 var rows;
 var cols;
@@ -49,8 +47,8 @@ window.onload = function () {
 };
 
 function setGameDimensions() {
-  rows = Math.floor(window.innerHeight / blockSize);
-  cols = Math.floor(window.innerWidth / blockSize);
+  rows = Math.floor((window.innerHeight / blockSize) * 2);
+  cols = Math.floor((window.innerWidth / blockSize) * 2);
 
   board = document.getElementById("board");
   backgroundBoard = document.getElementById("background-board");
@@ -228,6 +226,19 @@ function changeDirection(e) {
 }
 
 function placeFood() {
-  foodX = Math.floor(Math.random() * cols) * blockSize;
-  foodY = Math.floor(Math.random() * rows) * blockSize;
+  let validPosition = false;
+
+  //validPosition is anywhere the snake isn't
+  while (!validPosition) {
+    foodX = Math.floor(Math.random() * cols) * blockSize;
+    foodY = Math.floor(Math.random() * rows) * blockSize;
+
+    validPosition = true;
+    for (let i = 0; i < snakeBody.length; i++) {
+      if (foodX === snakeBody[i][0] && foodY === snakeBody[i][1]) {
+        validPosition = false;
+        break;
+      }
+    }
+  }
 }

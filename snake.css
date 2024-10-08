@@ -34,9 +34,23 @@ body {
 }
 
 #start-button {
-  padding: 10px 20px;
-  font-size: 20px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 10px;
+  height: 22%;
+  width: 15%;
+  font-family: "PixelFont", sans-serif;
+  font-size: 35px;
+  color: #316a00;
+  background-image: url("images/startImg.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+  image-rendering: pixelated;
   cursor: pointer;
+  border: none;
 }
 
 canvas {

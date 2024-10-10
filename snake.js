@@ -22,6 +22,14 @@ var gameOver = false;
 var grass1 = new Image();
 var grass2 = new Image();
 var grass3 = new Image();
+
+var snake_body = new Image();
+var snake_head = new Image();
+var snake_rotate = new Image();
+var snake_tail = new Image();
+
+var apple = new Image();
+
 var imagesLoaded = 0;
 
 var startScreen = document.getElementById("start-screen");
@@ -34,6 +42,13 @@ window.onload = function () {
   grass1.src = "images/grass1.png";
   grass2.src = "images/grass2.png";
   grass3.src = "images/grass3.png";
+
+  snake_body.src = "images/snake-body.png";
+  snake_head.src = "images/snake-head.png";
+  snake_rotate.src = "images/snake-rotate.png";
+  snake_tail.src = "images/snake-tail.png";
+
+  apple.src = "images/apple.png";
 
   function imageLoaded() {
     imagesLoaded++;

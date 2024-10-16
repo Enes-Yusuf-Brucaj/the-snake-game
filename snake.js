@@ -6,13 +6,18 @@ var context;
 
 var snakeX = blockSize * 5;
 var snakeY = blockSize * 5;
+var snakeRotation = Math.PI / 2; //90 Degrees to the right
 
-var velocityX = 0;
+var velocityX = 1;
 var velocityY = 0;
 
 var directionQueue = [];
 
-var snakeBody = [];
+var snakeBody = [
+  [snakeX, snakeY, snakeRotation],
+  [snakeX - blockSize, snakeY, snakeRotation],
+  [snakeX - blockSize * 2, snakeY, snakeRotation],
+];
 
 var foodX;
 var foodY;
@@ -136,78 +141,66 @@ function startGame() {
 
 function update() {
   if (gameOver) {
+    alert("Game Over");
     return;
   }
 
   context.clearRect(0, 0, board.width, board.height);
-
   context.drawImage(apple, foodX, foodY, blockSize, blockSize);
 
-  //Direction changing logic
   if (snakeX % blockSize === 0 && snakeY % blockSize === 0) {
     if (directionQueue.length > 0) {
       var newDirection = directionQueue.shift();
       velocityX = newDirection[0];
       velocityY = newDirection[1];
+      snakeRotation = newDirection[2];
     }
   }
 
   if (snakeX == foodX && snakeY == foodY) {
-    snakeBody.push([foodX, foodY]);
+    snakeBody.push([foodX, foodY, snakeRotation]);
     placeFood();
   }
 
-  //Snake moving logic
-  //snakeBody has array that is always 3, now including rotation and sometimes 4 which includes next rotation
   for (let i = snakeBody.length - 1; i > 0; i--) {
-    snakeBody[i] = snakeBody[i - 1];
+    snakeBody[i] = [...snakeBody[i - 1]];
   }
   if (snakeBody.length) {
-    snakeBody[0] = [snakeX, snakeY];
+    snakeBody[0] = [snakeX, snakeY, snakeRotation];
   }
 
   snakeX += velocityX * blockSize;
   snakeY += velocityY * blockSize;
 
-  // Wrapping logic
-  if (snakeX < 0) {
-    snakeX = cols * blockSize - blockSize; // wrap to the right side
-  } else if (snakeX >= cols * blockSize) {
-    snakeX = 0; // wrap to the left side
-  }
+  if (snakeX < 0) snakeX = cols * blockSize - blockSize;
+  else if (snakeX >= cols * blockSize) snakeX = 0;
 
-  if (snakeY < 0) {
-    snakeY = rows * blockSize - blockSize; // wrap to the bottom
-  } else if (snakeY >= rows * blockSize) {
-    snakeY = 0; // wrap to the top
-  }
-
-  context.drawImage(snake_head, snakeX, snakeY, blockSize, blockSize);
+  if (snakeY < 0) snakeY = rows * blockSize - blockSize;
+  else if (snakeY >= rows * blockSize) snakeY = 0;
 
   for (let i = 0; i < snakeBody.length; i++) {
-    if (i == snakeBody.length - 1) {
-      context.drawImage(
-        snake_tail,
-        snakeBody[i][0],
-        snakeBody[i][1],
-        blockSize,
-        blockSize
-      );
+    const part = snakeBody[i];
+    const [x, y, rotation] = part;
+
+    context.save();
+    context.translate(x + blockSize / 2, y + blockSize / 2); //changing context origin to be at snake part
+    context.rotate(rotation);
+    context.translate(-blockSize / 2, -blockSize / 2);
+    if (i == 0) {
+      context.drawImage(snake_head, 0, 0, blockSize, blockSize);
+    } else if (i == snakeBody.length - 1) {
+      context.drawImage(snake_tail, 0, 0, blockSize, blockSize);
     } else {
-      context.drawImage(
-        snake_body,
-        snakeBody[i][0],
-        snakeBody[i][1],
-        blockSize,
-        blockSize
-      );
+      context.drawImage(snake_body, 0, 0, blockSize, blockSize);
     }
+    context.restore();
   }
 
-  for (let i = 0; i < snakeBody.length; i++) {
-    if (snakeX == snakeBody[i][0] && snakeY == snakeBody[i][1]) {
-      gameOver = true;
-      alert("Game Over");
+  if (snakeBody.length > 3) {
+    for (let i = 1; i < snakeBody.length; i++) {
+      if (snakeX == snakeBody[i][0] && snakeY == snakeBody[i][1]) {
+        gameOver = true;
+      }
     }
   }
 }
@@ -215,6 +208,7 @@ function update() {
 function changeDirection(e) {
   let newDirectionX = 0;
   let newDirectionY = 0;
+  let newRotation = 0;
 
   if (e.code == "ArrowUp") {
     newDirectionX = 0;
@@ -222,12 +216,15 @@ function changeDirection(e) {
   } else if (e.code == "ArrowDown") {
     newDirectionX = 0;
     newDirectionY = 1;
+    newRotation = Math.PI;
   } else if (e.code == "ArrowLeft") {
     newDirectionX = -1;
     newDirectionY = 0;
+    newRotation = -Math.PI / 2;
   } else if (e.code == "ArrowRight") {
     newDirectionX = 1;
     newDirectionY = 0;
+    newRotation = Math.PI / 2;
   } else {
     return;
   }
@@ -241,6 +238,7 @@ function changeDirection(e) {
     currentDirectionY = lastDirection[1];
   }
 
+  //Can't go opposite to current direction
   if (
     newDirectionX === -currentDirectionX &&
     newDirectionY === -currentDirectionY
@@ -249,10 +247,10 @@ function changeDirection(e) {
   }
 
   if (directionQueue.length < 2) {
-    directionQueue.push([newDirectionX, newDirectionY]);
+    directionQueue.push([newDirectionX, newDirectionY, newRotation]);
   } else {
     directionQueue.shift();
-    directionQueue.push([newDirectionX, newDirectionY]);
+    directionQueue.push([newDirectionX, newDirectionY, newRotation]);
   }
 }
 

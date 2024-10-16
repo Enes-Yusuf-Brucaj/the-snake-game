@@ -83,7 +83,7 @@ function setGameDimensions() {
 }
 
 function drawBackground() {
-  //generating random tile map
+  //Generating random tile map
   for (let x = 0; x < cols; x++) {
     for (let y = 0; y < rows; y++) {
       var randomNum = Math.floor(Math.random() * 10) + 1;
@@ -128,7 +128,6 @@ startButton.addEventListener("click", function () {
 });
 
 function startGame() {
-  console.log("hi");
   placeFood();
   document.addEventListener("keyup", changeDirection);
 
@@ -142,10 +141,9 @@ function update() {
 
   context.clearRect(0, 0, board.width, board.height);
 
-  context.fillStyle = "red";
-  context.fillRect(foodX, foodY, blockSize, blockSize);
+  context.drawImage(apple, foodX, foodY, blockSize, blockSize);
 
-  // Direction changing logic
+  //Direction changing logic
   if (snakeX % blockSize === 0 && snakeY % blockSize === 0) {
     if (directionQueue.length > 0) {
       var newDirection = directionQueue.shift();
@@ -159,6 +157,8 @@ function update() {
     placeFood();
   }
 
+  //Snake moving logic
+  //snakeBody has array that is always 3, now including rotation and sometimes 4 which includes next rotation
   for (let i = snakeBody.length - 1; i > 0; i--) {
     snakeBody[i] = snakeBody[i - 1];
   }
@@ -166,14 +166,8 @@ function update() {
     snakeBody[0] = [snakeX, snakeY];
   }
 
-  context.fillStyle = "lime";
   snakeX += velocityX * blockSize;
   snakeY += velocityY * blockSize;
-  context.fillRect(snakeX, snakeY, blockSize, blockSize);
-
-  for (let i = 0; i < snakeBody.length; i++) {
-    context.fillRect(snakeBody[i][0], snakeBody[i][1], blockSize, blockSize);
-  }
 
   // Wrapping logic
   if (snakeX < 0) {
@@ -186,6 +180,28 @@ function update() {
     snakeY = rows * blockSize - blockSize; // wrap to the bottom
   } else if (snakeY >= rows * blockSize) {
     snakeY = 0; // wrap to the top
+  }
+
+  context.drawImage(snake_head, snakeX, snakeY, blockSize, blockSize);
+
+  for (let i = 0; i < snakeBody.length; i++) {
+    if (i == snakeBody.length - 1) {
+      context.drawImage(
+        snake_tail,
+        snakeBody[i][0],
+        snakeBody[i][1],
+        blockSize,
+        blockSize
+      );
+    } else {
+      context.drawImage(
+        snake_body,
+        snakeBody[i][0],
+        snakeBody[i][1],
+        blockSize,
+        blockSize
+      );
+    }
   }
 
   for (let i = 0; i < snakeBody.length; i++) {

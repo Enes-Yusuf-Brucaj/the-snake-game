@@ -4,9 +4,14 @@ var cols;
 var board;
 var context;
 
+const rotateLeft = -Math.PI / 2;
+const rotateRight = Math.PI / 2;
+const rotateDown = Math.PI;
+const rotateUp = 0;
+
 var snakeX = blockSize * 5;
 var snakeY = blockSize * 5;
-var snakeRotation = Math.PI / 2; //90 Degrees to the right
+var snakeRotation = rotateRight; //90 Degrees to the right
 
 var velocityX = 1;
 var velocityY = 0;
@@ -42,8 +47,6 @@ var header = document.getElementById("header");
 var startButton = document.getElementById("start-button");
 
 window.onload = function () {
-  console.log(startButton);
-
   grass1.src = "images/grass1.png";
   grass2.src = "images/grass2.png";
   grass3.src = "images/grass3.png";
@@ -178,18 +181,65 @@ function update() {
   if (snakeY < 0) snakeY = rows * blockSize - blockSize;
   else if (snakeY >= rows * blockSize) snakeY = 0;
 
+  var tempDirection; //to convert from sanke-rotate rotation to regular rotation to properly match their directions
+
   for (let i = 0; i < snakeBody.length; i++) {
     const part = snakeBody[i];
     const [x, y, rotation] = part;
 
+    var prevRotation;
+    var nextRotation;
+
     context.save();
-    context.translate(x + blockSize / 2, y + blockSize / 2); //changing context origin to be at snake part
-    context.rotate(rotation);
+    context.translate(x + blockSize / 2, y + blockSize / 2); //changing context origin to be at center of snake part
+
+    if (i > 0 && i < snakeBody.length - 1) {
+      nextRotation = snakeBody[i - 1][2];
+      prevRotation = snakeBody[i + 1][2];
+
+      if (tempDirection != null) nextRotation = tempDirection;
+
+      if (prevRotation != nextRotation) {
+        if (
+          (prevRotation == rotateUp && nextRotation == rotateLeft) ||
+          (prevRotation == rotateRight && nextRotation == rotateDown)
+        ) {
+          context.rotate(rotateUp);
+        } else if (
+          (prevRotation == rotateRight && nextRotation == rotateUp) ||
+          (prevRotation == rotateDown && nextRotation == rotateLeft)
+        ) {
+          context.rotate(rotateRight);
+        } else if (
+          (prevRotation == rotateLeft && nextRotation == rotateDown) ||
+          (prevRotation == rotateUp && nextRotation == rotateRight)
+        ) {
+          context.rotate(rotateLeft);
+        } else if (
+          (prevRotation == rotateDown && nextRotation == rotateRight) ||
+          (prevRotation == rotateLeft && nextRotation == rotateUp)
+        ) {
+          context.rotate(rotateDown);
+        }
+
+        tempDirection = prevRotation; //changing tempDirection to prevRotation to reflect the snake-rotate's true direction since the correlation between rotation and direction is different for snake-rotate
+      } else {
+        context.rotate(rotation);
+        tempDirection = null; //resetting tempDirection to indicate that the previous part wasn't a snake-rotate and thus no conversion is required
+      }
+    } else {
+      context.rotate(rotation);
+      tempDirection = null;
+    }
+
     context.translate(-blockSize / 2, -blockSize / 2);
+
     if (i == 0) {
       context.drawImage(snake_head, 0, 0, blockSize, blockSize);
     } else if (i == snakeBody.length - 1) {
       context.drawImage(snake_tail, 0, 0, blockSize, blockSize);
+    } else if (prevRotation != nextRotation) {
+      context.drawImage(snake_rotate, 0, 0, blockSize, blockSize);
     } else {
       context.drawImage(snake_body, 0, 0, blockSize, blockSize);
     }
@@ -208,7 +258,7 @@ function update() {
 function changeDirection(e) {
   let newDirectionX = 0;
   let newDirectionY = 0;
-  let newRotation = 0;
+  let newRotation = rotateUp;
 
   if (e.code == "ArrowUp") {
     newDirectionX = 0;
@@ -216,15 +266,15 @@ function changeDirection(e) {
   } else if (e.code == "ArrowDown") {
     newDirectionX = 0;
     newDirectionY = 1;
-    newRotation = Math.PI;
+    newRotation = rotateDown;
   } else if (e.code == "ArrowLeft") {
     newDirectionX = -1;
     newDirectionY = 0;
-    newRotation = -Math.PI / 2;
+    newRotation = rotateLeft;
   } else if (e.code == "ArrowRight") {
     newDirectionX = 1;
     newDirectionY = 0;
-    newRotation = Math.PI / 2;
+    newRotation = rotateRight;
   } else {
     return;
   }

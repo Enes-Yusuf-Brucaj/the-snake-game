@@ -12,6 +12,7 @@ const rotateUp = 0;
 var snakeX = blockSize * 5;
 var snakeY = blockSize * 5;
 var snakeRotation = rotateRight; //90 Degrees to the right
+var isTurn = false; //indicate that body part is snake-rotate and should be handled differently
 
 var velocityX = 1;
 var velocityY = 0;
@@ -19,9 +20,9 @@ var velocityY = 0;
 var directionQueue = [];
 
 var snakeBody = [
-  [snakeX, snakeY, snakeRotation],
-  [snakeX - blockSize, snakeY, snakeRotation],
-  [snakeX - blockSize * 2, snakeY, snakeRotation],
+  [snakeX, snakeY, snakeRotation, isTurn],
+  [snakeX - blockSize, snakeY, snakeRotation, isTurn],
+  [snakeX - blockSize * 2, snakeY, snakeRotation, isTurn],
 ];
 
 var foodX;
@@ -157,23 +158,28 @@ function update() {
       velocityX = newDirection[0];
       velocityY = newDirection[1];
       snakeRotation = newDirection[2];
+      isTurn = true;
     }
   }
 
   if (snakeX == foodX && snakeY == foodY) {
-    snakeBody.push([foodX, foodY, snakeRotation]);
+    snakeBody.push([foodX, foodY, snakeRotation, false]);
     placeFood();
   }
 
   for (let i = snakeBody.length - 1; i > 0; i--) {
     snakeBody[i] = [...snakeBody[i - 1]];
   }
-  if (snakeBody.length) {
-    snakeBody[0] = [snakeX, snakeY, snakeRotation];
-  }
 
   snakeX += velocityX * blockSize;
   snakeY += velocityY * blockSize;
+
+  if (snakeBody.length) {
+    snakeBody[0] = [snakeX, snakeY, snakeRotation];
+    snakeBody[1][3] = isTurn;
+  }
+
+  isTurn = false;
 
   if (snakeX < 0) snakeX = cols * blockSize - blockSize;
   else if (snakeX >= cols * blockSize) snakeX = 0;
@@ -181,7 +187,15 @@ function update() {
   if (snakeY < 0) snakeY = rows * blockSize - blockSize;
   else if (snakeY >= rows * blockSize) snakeY = 0;
 
-  var tempDirection; //to convert from sanke-rotate rotation to regular rotation to properly match their directions
+  //checking for collision
+  if (snakeBody.length > 4) {
+    for (let i = 1; i < snakeBody.length; i++) {
+      if (snakeX == snakeBody[i][0] && snakeY == snakeBody[i][1]) {
+        gameOver = true;
+        return;
+      }
+    }
+  }
 
   for (let i = 0; i < snakeBody.length; i++) {
     const part = snakeBody[i];
@@ -197,9 +211,10 @@ function update() {
       nextRotation = snakeBody[i - 1][2];
       prevRotation = snakeBody[i + 1][2];
 
-      if (tempDirection != null) nextRotation = tempDirection;
-
-      if (prevRotation != nextRotation) {
+      if (snakeBody[i][3]) {
+        if (snakeBody[i + 1][3]) {
+          prevRotation = rotation;
+        }
         if (
           (prevRotation == rotateUp && nextRotation == rotateLeft) ||
           (prevRotation == rotateRight && nextRotation == rotateDown)
@@ -221,15 +236,13 @@ function update() {
         ) {
           context.rotate(rotateDown);
         }
-
-        tempDirection = prevRotation; //changing tempDirection to prevRotation to reflect the snake-rotate's true direction since the correlation between rotation and direction is different for snake-rotate
       } else {
         context.rotate(rotation);
-        tempDirection = null; //resetting tempDirection to indicate that the previous part wasn't a snake-rotate and thus no conversion is required
       }
+    } else if (i == snakeBody.length - 1 && rotation != nextRotation) {
+      context.rotate(snakeBody[i - 1][2]);
     } else {
       context.rotate(rotation);
-      tempDirection = null;
     }
 
     context.translate(-blockSize / 2, -blockSize / 2);
@@ -238,20 +251,12 @@ function update() {
       context.drawImage(snake_head, 0, 0, blockSize, blockSize);
     } else if (i == snakeBody.length - 1) {
       context.drawImage(snake_tail, 0, 0, blockSize, blockSize);
-    } else if (prevRotation != nextRotation) {
+    } else if (snakeBody[i][3]) {
       context.drawImage(snake_rotate, 0, 0, blockSize, blockSize);
     } else {
       context.drawImage(snake_body, 0, 0, blockSize, blockSize);
     }
     context.restore();
-  }
-
-  if (snakeBody.length > 3) {
-    for (let i = 1; i < snakeBody.length; i++) {
-      if (snakeX == snakeBody[i][0] && snakeY == snakeBody[i][1]) {
-        gameOver = true;
-      }
-    }
   }
 }
 
@@ -290,8 +295,9 @@ function changeDirection(e) {
 
   //Can't go opposite to current direction
   if (
-    newDirectionX === -currentDirectionX &&
-    newDirectionY === -currentDirectionY
+    (newDirectionX === -currentDirectionX &&
+      newDirectionY === -currentDirectionY) ||
+    (newDirectionX === currentDirectionX && newDirectionY === currentDirectionY)
   ) {
     return;
   }

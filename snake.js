@@ -174,18 +174,19 @@ function update() {
   snakeX += velocityX * blockSize;
   snakeY += velocityY * blockSize;
 
+  //wrapping logic
+  if (snakeX < 0) snakeX = cols * blockSize - blockSize;
+  else if (snakeX >= cols * blockSize) snakeX = 0;
+
+  if (snakeY < 0) snakeY = rows * blockSize - blockSize;
+  else if (snakeY >= rows * blockSize) snakeY = 0;
+
   if (snakeBody.length) {
     snakeBody[0] = [snakeX, snakeY, snakeRotation];
     snakeBody[1][3] = isTurn;
   }
 
   isTurn = false;
-
-  if (snakeX < 0) snakeX = cols * blockSize - blockSize;
-  else if (snakeX >= cols * blockSize) snakeX = 0;
-
-  if (snakeY < 0) snakeY = rows * blockSize - blockSize;
-  else if (snakeY >= rows * blockSize) snakeY = 0;
 
   //checking for collision
   if (snakeBody.length > 4) {
@@ -239,7 +240,7 @@ function update() {
       } else {
         context.rotate(rotation);
       }
-    } else if (i == snakeBody.length - 1 && rotation != nextRotation) {
+    } else if (i == snakeBody.length - 1 && rotation != snakeBody[i - 1][2]) {
       context.rotate(snakeBody[i - 1][2]);
     } else {
       context.rotate(rotation);

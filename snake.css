@@ -19,18 +19,41 @@ body {
   left: 0;
   text-align: center;
   z-index: 2;
+  user-select: none;
 }
 
 #header {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: fixed;
   font-size: calc(4vw + 3vh);
   width: 100%;
   height: 20%;
   background-color: #9fdf5b;
   color: #316a00;
   transition: transform 1s ease-out;
+}
+
+#icons {
+  display: flex;
+  position: absolute;
+  left: 80%;
+  font-size: calc(3vw + 2vh);
+  color: #316a00;
+}
+
+.icon-link {
+  color: inherit;
+  margin-right: 1vw;
+}
+
+.icon-link:first-child {
+  margin-left: 1vw;
+}
+
+.icon-link:hover {
+  color: inherit;
 }
 
 #start-button {

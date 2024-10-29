@@ -92,3 +92,44 @@ canvas {
   image-rendering: pixelated;
   z-index: 1;
 }
+
+#game-over-screen {
+  font-family: "PixelFont", sans-serif;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  padding: 20px;
+  background-color: #9fdf5b;
+  color: #316a00;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 3;
+  user-select: none;
+}
+
+#game-over-header {
+  font-size: 2em;
+  margin-bottom: 15px;
+}
+
+#score-display {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+#game-over-buttons button {
+  font-family: "PixelFont", sans-serif;
+  font-size: 1em;
+  color: #316a00;
+  background-color: #fff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin: 5px;
+}
+
+#game-over-buttons button:hover {
+  background-color: #9fdf5b;
+}

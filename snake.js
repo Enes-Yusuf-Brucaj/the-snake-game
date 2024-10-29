@@ -28,6 +28,7 @@ var snakeBody = [
 var foodX;
 var foodY;
 
+var score = 0;
 var gameOver = false;
 
 var grass1 = new Image();
@@ -46,6 +47,8 @@ var imagesLoaded = 0;
 var startScreen = document.getElementById("start-screen");
 var header = document.getElementById("header");
 var startButton = document.getElementById("start-button");
+var retryButton = document.getElementById("retry-button");
+var menuButton = document.getElementById("menu-button");
 
 window.onload = function () {
   grass1.src = "images/grass1.png";
@@ -126,6 +129,29 @@ function drawBackground() {
   }
 }
 
+retryButton.addEventListener("click", function () {
+  score = 0;
+  snakeX = blockSize * 5;
+  snakeY = blockSize * 5;
+  velocityX = 1;
+  velocityY = 0;
+  directionQueue = [];
+  snakeRotation = rotateRight;
+  snakeBody = [
+    [snakeX, snakeY, snakeRotation, false],
+    [snakeX - blockSize, snakeY, snakeRotation, false],
+    [snakeX - blockSize * 2, snakeY, snakeRotation, false],
+  ];
+  placeFood();
+  drawSnake();
+  gameOver = false;
+  document.getElementById("game-over-screen").style.display = "none";
+});
+
+menuButton.addEventListener("click", function () {
+  window.location.reload();
+});
+
 startButton.addEventListener("click", function () {
   header.style.transform = "translateY(-100px)";
   startButton.remove();
@@ -145,8 +171,13 @@ function startGame() {
 
 function update() {
   if (gameOver) {
-    alert("Game Over");
-    return;
+    try {
+      document.getElementById("game-over-screen").style.display = "block";
+      document.getElementById("final-score").innerText = score;
+      return;
+    } catch (error) {
+      return;
+    }
   }
 
   context.clearRect(0, 0, board.width, board.height);
@@ -163,6 +194,9 @@ function update() {
   }
 
   if (snakeX == foodX && snakeY == foodY) {
+    score += 100;
+    document.getElementById("score-display").innerText = "Score: " + score;
+
     snakeBody.push([foodX, foodY, snakeRotation, false]);
     placeFood();
   }
@@ -182,7 +216,7 @@ function update() {
   else if (snakeY >= rows * blockSize) snakeY = 0;
 
   if (snakeBody.length) {
-    snakeBody[0] = [snakeX, snakeY, snakeRotation];
+    snakeBody[0] = [snakeX, snakeY, snakeRotation, false];
     snakeBody[1][3] = isTurn;
   }
 
@@ -197,7 +231,10 @@ function update() {
       }
     }
   }
+  drawSnake();
+}
 
+function drawSnake() {
   for (let i = 0; i < snakeBody.length; i++) {
     const part = snakeBody[i];
     const [x, y, rotation] = part;

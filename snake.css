@@ -103,7 +103,8 @@ canvas {
   padding: 20px;
   background-color: #9fdf5b;
   color: #316a00;
-  border-radius: 10px;
+  border-radius: 20px;
+  border: 3px solid #316a00;
   text-align: center;
   z-index: 3;
   user-select: none;
@@ -123,13 +124,14 @@ canvas {
   font-family: "PixelFont", sans-serif;
   font-size: 1em;
   color: #316a00;
-  background-color: #fff;
-  border: none;
+  background-color: #9fdf5b;
+  border-radius: 20px;
+  border: 2px solid #316a00;
   padding: 10px 20px;
   cursor: pointer;
   margin: 5px;
 }
 
 #game-over-buttons button:hover {
-  background-color: #9fdf5b;
+  background-color: #a0ed4d;
 }

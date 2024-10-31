@@ -174,8 +174,10 @@ function update() {
     try {
       document.getElementById("game-over-screen").style.display = "block";
       document.getElementById("final-score").innerText = score;
+      drawSnake();
       return;
     } catch (error) {
+      drawSnake();
       return;
     }
   }
@@ -183,13 +185,16 @@ function update() {
   context.clearRect(0, 0, board.width, board.height);
   context.drawImage(apple, foodX, foodY, blockSize, blockSize);
 
-  if (snakeX % blockSize === 0 && snakeY % blockSize === 0) {
-    if (directionQueue.length > 0) {
-      var newDirection = directionQueue.shift();
-      velocityX = newDirection[0];
-      velocityY = newDirection[1];
-      snakeRotation = newDirection[2];
-      isTurn = true;
+  if (!gameOver) {
+    // Handle direction change and movement
+    if (snakeX % blockSize === 0 && snakeY % blockSize === 0) {
+      if (directionQueue.length > 0) {
+        const newDirection = directionQueue.shift();
+        velocityX = newDirection[0];
+        velocityY = newDirection[1];
+        snakeRotation = newDirection[2];
+        isTurn = true;
+      }
     }
   }
 
